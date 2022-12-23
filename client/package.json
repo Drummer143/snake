@@ -1,21 +1,19 @@
 {
   "name": "client",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "webpack-dev-server",
-    "build": "webpack build",
-    "reinstall" : "npm uninstall rust-snake && npm i rust-snake"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "reinstall": "cd node_modules && del rust-snake && npm i rust-snake"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "copy-webpack-plugin": "^11.0.0",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1",
+  "dependencies": {
     "rust-snake": "file:../rust/pkg"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0"
   }
 }
