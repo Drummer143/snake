@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "reinstall": "cd node_modules && del rust-snake && npm i rust-snake"
+    "reinstall": "cd node_modules && del rust-snake && npm i "
   },
   "dependencies": {
-    "rust-snake": "file:../rust/pkg"
+    "rust-snake": "file:../rust/pkg",
+    "sass": "^1.57.1"
   },
   "devDependencies": {
     "typescript": "^4.9.3",
