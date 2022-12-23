@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "reinstall": "cd node_modules && del rust-snake && npm i "
+    "reinstall": "npm i rust-snake"
   },
   "dependencies": {
     "rust-snake": "file:../rust/pkg",
