@@ -1,13 +1,5 @@
-async function init() {
-    const res = await fetch('sum.wasm')
-    const buffer = await res.arrayBuffer();
-    const wasm = await WebAssembly.instantiate(buffer);
+import init, { greet } from 'rust-snake'
 
-    const sum = wasm.instance.exports.sum;
-
-    const result = sum(20, 12);
-
-    console.log(result);
-}
-
-init();
+init().then(res => {
+    greet('Миша привет из Rust');
+})

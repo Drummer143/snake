@@ -5,3 +5,5 @@ Cargo.lock
 
 # Client
 *node_modules
+
+*package-lock.json
