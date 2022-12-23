@@ -1,3 +1,7 @@
-/target
+# Rust
+*target
 
 Cargo.lock
+
+# Client
+*node_modules
