@@ -4,27 +4,6 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub struct Grid {
-    width: usize,
-    height: usize,
-}
-
-#[wasm_bindgen]
-impl Grid {
-    pub fn new(width: usize, height: usize) -> Grid {
-        Grid { width, height }
-    }
-
-    pub fn get_width(&self) -> usize {
-        return self.width;
-    }
-
-    pub fn get_height(&self) -> usize {
-        return self.height;
-    }
-}
-
-#[wasm_bindgen]
 pub struct SnakeCell {
     pub x: isize,
     pub y: isize,
@@ -40,22 +19,17 @@ pub struct Orientation {
 pub struct Snake {
     max_size: usize,
     cells: Vec<SnakeCell>,
-    grid: Grid,
     orientation: Orientation,
 }
 
 #[wasm_bindgen]
 impl Snake {
-    pub fn new(grid: Grid) -> Snake {
-        let rows = grid.get_height();
-        let columns = grid.get_width();
-
+    pub fn new(worldWidth: usize, worldHeight: usize) -> Snake {
         Snake {
-            grid,
-            max_size: rows * columns,
+            max_size: worldHeight * worldWidth,
             cells: vec![SnakeCell {
-                x: (columns / 2) as isize,
-                y: (rows / 2) as isize,
+                x: (worldWidth / 2) as isize,
+                y: (worldHeight / 2) as isize,
             }],
             orientation: Orientation { x: 0, y: 1 },
         }
@@ -63,13 +37,6 @@ impl Snake {
 
     pub fn check_size(&self) -> bool {
         return self.max_size > self.cells.len();
-    }
-
-    pub fn check_collision_with_walls(&self) -> bool {
-        return self.cells[0].x < 0
-            || self.cells[0].x > self.grid.get_width() as isize
-            || self.cells[0].y < 0
-            || self.cells[0].y > self.grid.get_height() as isize;
     }
 
     pub fn check_collision_with_self(&self) -> bool {
@@ -82,31 +49,89 @@ impl Snake {
             }
         }
 
-        return is_collision;
+        is_collision
     }
 
-    pub fn get_head_coordinates(&self) -> String {
+    #[wasm_bindgen(getter)]
+    pub fn head_coordinates(&self) -> JsValue {
         let head = &self.cells[0];
 
-        return format!("{} {}", head.x, head.y);
+        JsValue::from(SnakeCell {
+            x: head.x,
+            y: head.y,
+        })
     }
 
-    pub fn get_orientation(&self) -> String {
+    #[wasm_bindgen(getter)]
+    pub fn orientation(&self) -> JsValue {
         let orientation = &self.orientation;
 
-        return format!("{} {}", orientation.x, orientation.y);
+        JsValue::from(Orientation {
+            x: orientation.x,
+            y: orientation.y,
+        })
     }
 
     pub fn move_snake(&mut self) {
         let orientation = &self.orientation;
 
         for i in 0..self.cells.len() {
-            self.cells[i].x += orientation.x;
-            self.cells[i].y -= orientation.y;
+            self.cells[i].x += 1 * orientation.x;
+            self.cells[i].y -= 1 * orientation.y;
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub struct World {
+    width: usize,
+    height: usize,
+    snake: Snake,
+}
+
+#[wasm_bindgen]
+impl World {
+    pub fn new(width: usize, height: usize) -> World {
+        let snake = Snake::new(width, height);
+
+        World {
+            width,
+            height,
+            snake,
         }
     }
 
-    // pub fn lol() -> String {
-    //     return format!("test");
-    // }
+    #[wasm_bindgen(getter)]
+    pub fn width(&self) -> usize {
+        return self.width;
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn height(&self) -> usize {
+        return self.height;
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn snake_x_coordinates(&self) -> js_sys::Int32Array {
+        let a = self
+            .snake
+            .cells
+            .iter()
+            .map(|cell| cell.x as i32)
+            .collect::<Vec<i32>>();
+
+        js_sys::Int32Array::from(&a[..])
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn snake_y_coordinates(&self) -> js_sys::Int32Array {
+        let a = self
+            .snake
+            .cells
+            .iter()
+            .map(|cell| cell.y as i32)
+            .collect::<Vec<i32>>();
+
+        js_sys::Int32Array::from(&a[..])
+    }
 }

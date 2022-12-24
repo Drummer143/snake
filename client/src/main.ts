@@ -1,4 +1,4 @@
-import init, { Grid, Snake } from "rust-snake"
+import init, { World, Snake } from "rust-snake"
 
 type Coordinates = {
     x: number
@@ -12,29 +12,29 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d');
 
 init().then(() => {
-    const grid = Grid.new(9, 9);
-    const snake = Snake.new(grid);
+    const world = World.new(9, 9);
+    const snakeCoordinates = world.get_snake_coordinates();
+    console.log(snakeCoordinates);
+    snakeCoordinates.forEach(d => console.log(d));
 
-    canvas.width = CELL_SIZE * grid.get_width();
-    canvas.height = CELL_SIZE * grid.get_height();
+    canvas.width = CELL_SIZE * world.get_width;
+    canvas.height = CELL_SIZE * world.get_height;
 
-    drawGrid(grid);
-    drawSnake(snake);
+    drawGrid(world);
 
-    play(snake, grid);
+    play(world);
 })
 
-const drawGrid = (grid: Grid) => {
+const drawGrid = (world: World) => {
     if (!ctx) {
         console.error('Can\'t find canvas');
         return
     }
 
-    debugger
     const canvasWidth = canvas.width,
         canvasHeight = canvas.height,
-        countOfColumns = grid.get_width(),
-        countOfRows = grid.get_height();
+        countOfColumns = world.get_width,
+        countOfRows = world.get_height;
 
     ctx.strokeStyle = '#444'
     ctx.beginPath();
@@ -80,16 +80,13 @@ const convertStringCoordsToArray = (stringCoords: string): Coordinates => {
     return { x, y };
 }
 
-const play = (snake: Snake, grid: Grid) => {
+const play = (world: World) => {
     document.addEventListener('keydown', e => {
         if (e.shiftKey && e.code === 'KeyX') {
-            snake.move_snake();
 
             ctx?.clearRect(0, 0, canvas.width, canvas.height)
-            drawSnake(snake);
-            drawGrid(grid);
+            drawGrid(world);
         } else if (e.code === 'KeyC') {
-            console.log(snake.get_head_coordinates());
         }
     })
 }
