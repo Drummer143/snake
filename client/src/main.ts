@@ -57,6 +57,8 @@ const drawSnake = (coordinates: Coordinates[]) => {
     if (coordinates.length === 0) { return };
 
     drawHead(coordinates[0]);
+    console.log(coordinates.slice(1))
+    drawBody(coordinates.slice(1));
 }
 
 const drawHead = ({ x, y }: Coordinates) => {
@@ -113,8 +115,27 @@ const drawHead = ({ x, y }: Coordinates) => {
     ctx.stroke();
 }
 
+const drawBody = (cells: Coordinates[]) => {
+    if (!ctx) { return }
+
+    ctx.fillStyle = 'green';
+    ctx.beginPath();
+
+    cells.forEach(({ x, y }) => {
+        ctx.moveTo(x * CELL_SIZE + CELL_SIZE / 4 * 3, y * CELL_SIZE + CELL_SIZE / 4 * 3);
+        ctx.lineTo((x + 1) * CELL_SIZE - CELL_SIZE / 4 * 3, y * CELL_SIZE + CELL_SIZE / 4 * 3);
+        ctx.lineTo((x + 1) * CELL_SIZE - CELL_SIZE / 4 * 3, (y + 1) * CELL_SIZE - CELL_SIZE / 4 * 3);
+        ctx.lineTo(x * CELL_SIZE + CELL_SIZE / 4 * 3, (y + 1) * CELL_SIZE - CELL_SIZE / 4 * 3);
+    })
+
+    ctx.fill();
+    ctx.stroke();
+}
+
 const play = () => {
     document.addEventListener('keydown', handleKeyDown);
+
+    world.eat();
 
     setInterval(() => {
         console.log(new Date().getSeconds());
@@ -122,7 +143,7 @@ const play = () => {
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
         drawSnake(mapSnakeCoordinates());
         drawGrid();
-    }, 500);
+    }, 2000);
 }
 
 const handleKeyDown = (e: KeyboardEvent) => {

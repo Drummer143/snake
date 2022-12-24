@@ -53,10 +53,13 @@ impl Snake {
     }
 
     pub fn crawl(&mut self) {
-        for i in 0..self.cells.len() {
-            self.cells[i].x += 1 * &self.rotation.x;
-            self.cells[i].y -= 1 * &self.rotation.y;
+        for i in (1..self.cells.len()).rev() {
+            self.cells[i].x = self.cells[i - 1].x;
+            self.cells[i].y = self.cells[i - 1].y;
         }
+
+        self.cells[0].x += 1 * self.rotation.x;
+        self.cells[0].y -= 1 * self.rotation.y;
     }
 
     pub fn rotate(&mut self, rotation: String) {
@@ -87,6 +90,15 @@ impl Snake {
             }
             _ => {}
         }
+    }
+
+    pub fn eat_food(&mut self) {
+        let last_cell = self.cells.last().unwrap();
+
+        self.cells.push(SnakeCell {
+            x: last_cell.x + &self.rotation.x,
+            y: last_cell.y + &self.rotation.y,
+        });
     }
 
     #[wasm_bindgen(getter)]
@@ -135,6 +147,10 @@ impl World {
 
     pub fn rotate_snake(&mut self, rotation: String) {
         self.snake.rotate(rotation);
+    }
+
+    pub fn eat(&mut self) {
+        self.snake.eat_food();
     }
 
     #[wasm_bindgen(getter)]
