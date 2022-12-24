@@ -8,8 +8,8 @@ type Coordinates = {
 const CELL_SIZE = 50;
 const SNAKE_PADDING = 0.05;
 
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('canvas') as HTMLCanvasElement,
+    ctx = canvas.getContext('2d');
 
 let world: World;
 
@@ -65,40 +65,46 @@ const drawHead = ({ x, y }: Coordinates) => {
     ctx.fillStyle = 'green';
     ctx.beginPath();
 
-    const { x: rotX, y: rotY } = world.snake_rotation;
-    console.log(rotX, rotY, world.snake_rotation_text_type);
-
     switch (world.snake_rotation_text_type) {
-        case 'right': {
-            ctx.moveTo(x * CELL_SIZE, (y + 1 - SNAKE_PADDING) * CELL_SIZE); // нижняя левая
-            ctx.lineTo((x + 0.5 - SNAKE_PADDING) * CELL_SIZE, (y + 1 - SNAKE_PADDING) * CELL_SIZE); // средняя левая
-            ctx.lineTo((x + 1 - SNAKE_PADDING * 2) * CELL_SIZE, (y + 0.5) * CELL_SIZE); // верхняя
-            ctx.lineTo((x + 0.5 - SNAKE_PADDING) * CELL_SIZE, (y + SNAKE_PADDING) * CELL_SIZE); // средняя правая
-            ctx.lineTo(x * CELL_SIZE, (y + SNAKE_PADDING) * CELL_SIZE); // нижняя правая
-            break;
-        }
+        case 'right':
         case 'left': {
-            ctx.moveTo((x + 1) * CELL_SIZE, (y + 1 - SNAKE_PADDING) * CELL_SIZE); // нижняя левая
-            ctx.lineTo((x + 0.5 + SNAKE_PADDING) * CELL_SIZE, (y + 1 - SNAKE_PADDING) * CELL_SIZE); // средняя левая
-            ctx.lineTo((x + SNAKE_PADDING * 2) * CELL_SIZE, (y + 0.5) * CELL_SIZE); // верхняя
-            ctx.lineTo((x + 0.5 + SNAKE_PADDING) * CELL_SIZE, (y + SNAKE_PADDING) * CELL_SIZE); // средняя правая
-            ctx.lineTo((x + 1) * CELL_SIZE, (y + SNAKE_PADDING) * CELL_SIZE); // нижняя правая
+            const bottomLineShift = world.snake_rotation_text_type === 'left' ? 1 : 0,
+                topPointShift = world.snake_rotation_text_type === 'right' ? 1 : 0,
+                snakePaddingSign = world.snake_rotation_text_type === 'right' ? 1 : -1,
+
+                leftPointY = (y + 1 - SNAKE_PADDING) * CELL_SIZE,
+                rightPointY = (y + SNAKE_PADDING) * CELL_SIZE,
+                bottomPointX = (x + bottomLineShift) * CELL_SIZE,
+                middlePointX = (x + 0.5 + snakePaddingSign * SNAKE_PADDING) * CELL_SIZE,
+                topPointX = (x + topPointShift - snakePaddingSign * SNAKE_PADDING * 2) * CELL_SIZE,
+                topPointY = (y + 0.5) * CELL_SIZE;
+
+            ctx.moveTo(bottomPointX, leftPointY); // bottom left point
+            ctx.lineTo(middlePointX, leftPointY); // middle left
+            ctx.lineTo(topPointX, topPointY); // top
+            ctx.lineTo(middlePointX, rightPointY); // middle right
+            ctx.lineTo(bottomPointX, rightPointY); // bottom right
             break;
         }
-        case 'up': {
-            ctx.moveTo((x + SNAKE_PADDING) * CELL_SIZE, (y + 1) * CELL_SIZE); // нижняя левая
-            ctx.lineTo((x + SNAKE_PADDING) * CELL_SIZE, (y + 0.5 + SNAKE_PADDING) * CELL_SIZE); // средняя левая
-            ctx.lineTo((x + 0.5) * CELL_SIZE, (y + SNAKE_PADDING * 2) * CELL_SIZE); // верхняя
-            ctx.lineTo((x + 1 - SNAKE_PADDING) * CELL_SIZE, (y + 0.5 + SNAKE_PADDING) * CELL_SIZE); // средняя правая
-            ctx.lineTo((x + 1 - SNAKE_PADDING) * CELL_SIZE, (y + 1) * CELL_SIZE); // нижняя правая
-            break;
-        }
+
+        case 'up':
         case 'down': {
-            ctx.moveTo((x + SNAKE_PADDING) * CELL_SIZE, y * CELL_SIZE); // нижняя левая
-            ctx.lineTo((x + SNAKE_PADDING) * CELL_SIZE, (y + 0.5 - SNAKE_PADDING) * CELL_SIZE); // средняя левая
-            ctx.lineTo((x + 0.5) * CELL_SIZE, (y + 1 - SNAKE_PADDING * 2) * CELL_SIZE); // верхняя
-            ctx.lineTo((x + 1 - SNAKE_PADDING) * CELL_SIZE, (y + 0.5 - SNAKE_PADDING) * CELL_SIZE); // средняя правая
-            ctx.lineTo((x + 1 - SNAKE_PADDING) * CELL_SIZE, y * CELL_SIZE); // нижняя правая
+            const bottomLineShift = world.snake_rotation_text_type === 'up' ? 1 : 0,
+                topPointShift = world.snake_rotation_text_type === 'down' ? 1 : 0,
+                snakePaddingSign = world.snake_rotation_text_type === 'down' ? 1 : -1,
+
+                leftPointX = (x + SNAKE_PADDING) * CELL_SIZE,
+                rightPointX = (x + 1 - SNAKE_PADDING) * CELL_SIZE,
+                bottomPointY = (y + bottomLineShift) * CELL_SIZE,
+                middlePointY = (y + 0.5 + snakePaddingSign * SNAKE_PADDING) * CELL_SIZE,
+                topPointX = (x + 0.5) * CELL_SIZE,
+                topPointY = (y + topPointShift - snakePaddingSign * SNAKE_PADDING * 2) * CELL_SIZE;
+
+            ctx.moveTo(leftPointX, bottomPointY); // bottom left point
+            ctx.lineTo(leftPointX, middlePointY); // middle left
+            ctx.lineTo(topPointX, topPointY); // top
+            ctx.lineTo(rightPointX, middlePointY); // middle right
+            ctx.lineTo(rightPointX, bottomPointY); // bottom right
             break;
         }
     }
@@ -107,9 +113,7 @@ const drawHead = ({ x, y }: Coordinates) => {
     ctx.stroke();
 }
 
-const play = () => {
-    document.addEventListener('keydown', handleKeyDown);
-}
+const play = () => document.addEventListener('keydown', handleKeyDown);
 
 const handleKeyDown = (e: KeyboardEvent) => {
     switch (e.code) {
