@@ -13,16 +13,17 @@ const ctx = canvas.getContext('2d');
 
 init().then(() => {
     const world = World.new(9, 9);
-    const snakeCoordinates = world.get_snake_coordinates();
-    console.log(snakeCoordinates);
-    snakeCoordinates.forEach(d => console.log(d));
+    const snakeCoordinates: Coordinates[] = mapSnakeCoordinates(world);
 
-    canvas.width = CELL_SIZE * world.get_width;
-    canvas.height = CELL_SIZE * world.get_height;
+        console.log(snakeCoordinates);
+
+    canvas.width = CELL_SIZE * world.width;
+    canvas.height = CELL_SIZE * world.height;
 
     drawGrid(world);
+    drawSnake(snakeCoordinates);
 
-    play(world);
+    play(world, snakeCoordinates);
 })
 
 const drawGrid = (world: World) => {
@@ -33,8 +34,8 @@ const drawGrid = (world: World) => {
 
     const canvasWidth = canvas.width,
         canvasHeight = canvas.height,
-        countOfColumns = world.get_width,
-        countOfRows = world.get_height;
+        countOfColumns = world.width,
+        countOfRows = world.height;
 
     ctx.strokeStyle = '#444'
     ctx.beginPath();
@@ -52,10 +53,10 @@ const drawGrid = (world: World) => {
     ctx.stroke();
 }
 
-const drawSnake = (snake: Snake) => {
-    const head = convertStringCoordsToArray(snake.get_head_coordinates());
+const drawSnake = (coordinates: Coordinates[]) => {
+    if (coordinates.length === 0) { return };
 
-    drawHead(head);
+    drawHead(coordinates[0]);
 }
 
 const drawHead = ({ x, y }: Coordinates) => {
@@ -74,19 +75,23 @@ const drawHead = ({ x, y }: Coordinates) => {
     ctx.fill();
 }
 
-const convertStringCoordsToArray = (stringCoords: string): Coordinates => {
-    const [x, y] = stringCoords.split(' ').map(coord => +coord);
-
-    return { x, y };
-}
-
-const play = (world: World) => {
+const play = (world: World, snakeCoordinates: Coordinates[]) => {
     document.addEventListener('keydown', e => {
         if (e.shiftKey && e.code === 'KeyX') {
+            world.move_snake();
 
-            ctx?.clearRect(0, 0, canvas.width, canvas.height)
+            console.log(world.snake_x_coordinates[0], world.snake_y_coordinates[0])
+            ctx?.clearRect(0, 0, canvas.width, canvas.height);
+            drawSnake(mapSnakeCoordinates(world));
             drawGrid(world);
         } else if (e.code === 'KeyC') {
         }
     })
+}
+
+const mapSnakeCoordinates = (world: World): Coordinates[] => {
+    return Array.from(world.snake_x_coordinates).map((x, i) => ({
+        x,
+        y: world.snake_y_coordinates[i]
+    }));
 }

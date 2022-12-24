@@ -24,12 +24,12 @@ pub struct Snake {
 
 #[wasm_bindgen]
 impl Snake {
-    pub fn new(worldWidth: usize, worldHeight: usize) -> Snake {
+    pub fn new(world_width: usize, world_height: usize) -> Snake {
         Snake {
-            max_size: worldHeight * worldWidth,
+            max_size: world_height * world_width,
             cells: vec![SnakeCell {
-                x: (worldWidth / 2) as isize,
-                y: (worldHeight / 2) as isize,
+                x: (world_width / 2) as isize,
+                y: (world_height / 2) as isize,
             }],
             orientation: Orientation { x: 0, y: 1 },
         }
@@ -99,6 +99,10 @@ impl World {
             height,
             snake,
         }
+    }
+
+    pub fn move_snake(&mut self) {
+        self.snake.move_snake();
     }
 
     #[wasm_bindgen(getter)]
