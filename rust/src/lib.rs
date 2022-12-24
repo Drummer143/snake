@@ -10,7 +10,7 @@ pub struct SnakeCell {
 }
 
 #[wasm_bindgen]
-pub struct Orientation {
+pub struct Rotation {
     pub x: isize,
     pub y: isize,
 }
@@ -19,7 +19,7 @@ pub struct Orientation {
 pub struct Snake {
     max_size: usize,
     cells: Vec<SnakeCell>,
-    orientation: Orientation,
+    rotation: Rotation,
 }
 
 #[wasm_bindgen]
@@ -31,12 +31,12 @@ impl Snake {
                 x: (world_width / 2) as isize,
                 y: (world_height / 2) as isize,
             }],
-            orientation: Orientation { x: 0, y: 1 },
+            rotation: Rotation { x: 0, y: 1 },
         }
     }
 
     pub fn check_size(&self) -> bool {
-        return self.max_size > self.cells.len();
+        self.max_size > self.cells.len()
     }
 
     pub fn check_collision_with_self(&self) -> bool {
@@ -52,6 +52,43 @@ impl Snake {
         is_collision
     }
 
+    pub fn crawl(&mut self) {
+        for i in 0..self.cells.len() {
+            self.cells[i].x += 1 * &self.rotation.x;
+            self.cells[i].y -= 1 * &self.rotation.y;
+        }
+    }
+
+    pub fn rotate(&mut self, rotation: String) {
+        match &rotation[..] {
+            "left" => {
+                if self.rotation.x == 0 {
+                    self.rotation.x = -1;
+                    self.rotation.y = 0;
+                }
+            }
+            "right" => {
+                if self.rotation.x == 0 {
+                    self.rotation.x = 1;
+                    self.rotation.y = 0;
+                }
+            }
+            "up" => {
+                if self.rotation.y == 0 {
+                    self.rotation.x = 0;
+                    self.rotation.y = 1;
+                }
+            }
+            "down" => {
+                if self.rotation.y == 0 {
+                    self.rotation.x = 0;
+                    self.rotation.y = -1;
+                }
+            }
+            _ => {}
+        }
+    }
+
     #[wasm_bindgen(getter)]
     pub fn head_coordinates(&self) -> JsValue {
         let head = &self.cells[0];
@@ -63,22 +100,13 @@ impl Snake {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn orientation(&self) -> JsValue {
-        let orientation = &self.orientation;
+    pub fn rotation(&self) -> JsValue {
+        let rotation = &self.rotation;
 
-        JsValue::from(Orientation {
-            x: orientation.x,
-            y: orientation.y,
+        JsValue::from(Rotation {
+            x: rotation.x,
+            y: rotation.y,
         })
-    }
-
-    pub fn move_snake(&mut self) {
-        let orientation = &self.orientation;
-
-        for i in 0..self.cells.len() {
-            self.cells[i].x += 1 * orientation.x;
-            self.cells[i].y -= 1 * orientation.y;
-        }
     }
 }
 
@@ -102,17 +130,21 @@ impl World {
     }
 
     pub fn move_snake(&mut self) {
-        self.snake.move_snake();
+        self.snake.crawl();
+    }
+
+    pub fn rotate_snake(&mut self, rotation: String) {
+        self.snake.rotate(rotation);
     }
 
     #[wasm_bindgen(getter)]
     pub fn width(&self) -> usize {
-        return self.width;
+        self.width
     }
 
     #[wasm_bindgen(getter)]
     pub fn height(&self) -> usize {
-        return self.height;
+        self.height
     }
 
     #[wasm_bindgen(getter)]
@@ -137,5 +169,28 @@ impl World {
             .collect::<Vec<i32>>();
 
         js_sys::Int32Array::from(&a[..])
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn snake_rotation(&self) -> JsValue {
+        self.snake.rotation()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn snake_rotation_text_type(&self) -> String {
+        let mut rotation_text = "left";
+        let rotation = &self.snake.rotation;
+
+        if rotation.x == 0 {
+            if rotation.y == 1 {
+                rotation_text = "up";
+            } else {
+                rotation_text = "down";
+            }
+        } else if rotation.x == 1 {
+            rotation_text = "right"
+        }
+
+        format!("{}", rotation_text)
     }
 }
