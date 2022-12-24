@@ -113,16 +113,20 @@ const drawHead = ({ x, y }: Coordinates) => {
     ctx.stroke();
 }
 
-const play = () => document.addEventListener('keydown', handleKeyDown);
+const play = () => {
+    document.addEventListener('keydown', handleKeyDown);
+
+    setInterval(() => {
+        console.log(new Date().getSeconds());
+        world.move_snake();
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        drawSnake(mapSnakeCoordinates());
+        drawGrid();
+    }, 500);
+}
 
 const handleKeyDown = (e: KeyboardEvent) => {
     switch (e.code) {
-        case 'KeyX': {
-            if (e.shiftKey) {
-                world.move_snake();
-            }
-            break;
-        }
         case 'ArrowLeft': {
             world.rotate_snake('left');
             break;
@@ -141,10 +145,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
         }
         default: console.log(e.code);
     };
-
-    ctx?.clearRect(0, 0, canvas.width, canvas.height);
-    drawSnake(mapSnakeCoordinates());
-    drawGrid();
 }
 
 const mapSnakeCoordinates = (): Coordinates[] => {
