@@ -4,22 +4,52 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub struct SnakeCell {
-    pub x: isize,
-    pub y: isize,
-}
-
-#[wasm_bindgen]
 pub struct Rotation {
     pub x: isize,
     pub y: isize,
 }
 
 #[wasm_bindgen]
+pub struct Coordinates {
+    pub x: isize,
+    pub y: isize,
+}
+
+#[wasm_bindgen]
+pub struct SnakeCell {
+    pub x: isize,
+    pub y: isize,
+    rotation: Rotation,
+}
+
+impl SnakeCell {
+    fn get_rotation(&self) -> &Rotation {
+        &self.rotation
+    }
+
+    fn set_rotation(&mut self, rot_x: isize, rot_y: isize) {
+        self.rotation.x = rot_x;
+        self.rotation.y = rot_y;
+    }
+
+    fn set_coordinates(&mut self, x: isize, y: isize) {
+        self.x = x;
+        self.y = y;
+    }
+}
+
+#[wasm_bindgen]
 pub struct Snake {
     max_size: usize,
     cells: Vec<SnakeCell>,
-    rotation: Rotation,
+    // rotation: Rotation,
+}
+
+
+impl Snake {
+    fn get_head_rotation(&self) -> &Rotation {
+        &self.cells.first().unwrap().get_rotation()
+    }
 }
 
 #[wasm_bindgen]
@@ -30,8 +60,8 @@ impl Snake {
             cells: vec![SnakeCell {
                 x: (world_width / 2) as isize,
                 y: (world_height / 2) as isize,
+                rotation: Rotation { x: 0, y: 1 },
             }],
-            rotation: Rotation { x: 0, y: 1 },
         }
     }
 
@@ -58,34 +88,35 @@ impl Snake {
             self.cells[i].y = self.cells[i - 1].y;
         }
 
-        self.cells[0].x += 1 * self.rotation.x;
-        self.cells[0].y -= 1 * self.rotation.y;
+        let head_rotation = self.get_head_rotation();
+        let x = self.cells.first().unwrap().x + 1 * head_rotation.x;
+        let y = self.cells.first().unwrap().y - 1 * head_rotation.y;
+        self.cells.first_mut().unwrap().set_coordinates(x, y);
     }
 
     pub fn rotate(&mut self, rotation: String) {
+        let head = self.cells.first_mut().unwrap();
+        let head_rotation = head.get_rotation();
+
         match &rotation[..] {
             "left" => {
-                if self.rotation.x == 0 {
-                    self.rotation.x = -1;
-                    self.rotation.y = 0;
+                if head_rotation.x == 0 {
+                    head.set_rotation(-1, 0);
                 }
             }
             "right" => {
-                if self.rotation.x == 0 {
-                    self.rotation.x = 1;
-                    self.rotation.y = 0;
+                if head_rotation.x == 0 {
+                    head.set_rotation(1, 0);
                 }
             }
             "up" => {
-                if self.rotation.y == 0 {
-                    self.rotation.x = 0;
-                    self.rotation.y = 1;
+                if head_rotation.y == 0 {
+                    head.set_rotation(0, 1);
                 }
             }
             "down" => {
-                if self.rotation.y == 0 {
-                    self.rotation.x = 0;
-                    self.rotation.y = -1;
+                if head_rotation.y == 0 {
+                    head.set_rotation(0, -1);
                 }
             }
             _ => {}
@@ -96,8 +127,9 @@ impl Snake {
         let last_cell = self.cells.last().unwrap();
 
         self.cells.push(SnakeCell {
-            x: last_cell.x + &self.rotation.x,
-            y: last_cell.y + &self.rotation.y,
+            x: last_cell.x + last_cell.rotation.x,
+            y: last_cell.y + last_cell.rotation.y,
+            rotation: Rotation { x: last_cell.rotation.x, y: last_cell.rotation.y }
         });
     }
 
@@ -105,7 +137,7 @@ impl Snake {
     pub fn head_coordinates(&self) -> JsValue {
         let head = &self.cells[0];
 
-        JsValue::from(SnakeCell {
+        JsValue::from(Coordinates {
             x: head.x,
             y: head.y,
         })
@@ -113,7 +145,7 @@ impl Snake {
 
     #[wasm_bindgen(getter)]
     pub fn rotation(&self) -> JsValue {
-        let rotation = &self.rotation;
+        let rotation = &self.cells.first().unwrap().rotation;
 
         JsValue::from(Rotation {
             x: rotation.x,
@@ -195,7 +227,7 @@ impl World {
     #[wasm_bindgen(getter)]
     pub fn snake_rotation_text_type(&self) -> String {
         let mut rotation_text = "left";
-        let rotation = &self.snake.rotation;
+        let rotation = &self.snake.cells.first().unwrap().rotation;
 
         if rotation.x == 0 {
             if rotation.y == 1 {

@@ -15,7 +15,7 @@ let world: World;
 
 init().then(() => {
     world = World.new(9, 9);
-    const snakeCoordinates: Coordinates[] = mapSnakeCoordinates();
+    const snakeCoordinates = mergeSnakeCoordinates();
 
     canvas.width = CELL_SIZE * world.width;
     canvas.height = CELL_SIZE * world.height;
@@ -57,7 +57,6 @@ const drawSnake = (coordinates: Coordinates[]) => {
     if (coordinates.length === 0) { return };
 
     drawHead(coordinates[0]);
-    console.log(coordinates.slice(1))
     drawBody(coordinates.slice(1));
 }
 
@@ -135,15 +134,15 @@ const drawBody = (cells: Coordinates[]) => {
 const play = () => {
     document.addEventListener('keydown', handleKeyDown);
 
-    world.eat();
+    for (let i = 0; i < 4; i++)
+        world.eat();
 
     setInterval(() => {
-        console.log(new Date().getSeconds());
         world.move_snake();
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        drawSnake(mapSnakeCoordinates());
+        drawSnake(mergeSnakeCoordinates());
         drawGrid();
-    }, 2000);
+    }, 500);
 }
 
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,7 +167,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
     };
 }
 
-const mapSnakeCoordinates = (): Coordinates[] => {
+const mergeSnakeCoordinates = (): Coordinates[] => {
     return Array.from(world.snake_x_coordinates).map((x, i) => ({
         x,
         y: world.snake_y_coordinates[i]
